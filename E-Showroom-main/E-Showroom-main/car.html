@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Cars Gallery</title>
+  <style>
+    body {
+      background: #f6f6f6;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 10px 0;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .scroll-container {
+      overflow-y: auto;
+      max-height: 80vh;
+      margin: 30px auto 0 auto;
+      padding-right: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .car-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      padding: 0 0 40px 0;
+      width: 750px;
+      margin: 0 auto;
+    }
+    .car {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 24px 18px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-align: center;
+    }
+    .car:hover {
+      transform: translateY(-8px) scale(1.04);
+      box-shadow: 0 8px 32px rgba(215,38,61,0.13);
+      border: 2px solid #d7263d;
+    }
+    .car img {
+      width: 100%;
+      max-width: 320px;
+      height: 140px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    .car h2 {
+      font-size: 20px;
+      margin: 10px 0 5px 0;
+      color: #222;
+      font-weight: 600;
+    }
+    .car .price {
+      color: #d7263d;
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      text-align: center;
+    }
+    .close {
+      float: right;
+      font-size: 22px;
+      cursor: pointer;
+      color: #d7263d;
+    }
+    .features {
+      text-align: left;
+      margin-top: 15px;
+    }
+    .compare-btn {
+      background: #d7263d;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    /* Comparison table */
+    .comparison {
+      margin-top: 30px;
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #f3f3f3;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Premium Cars Gallery</h1>
+    <p style="color:#888;font-size:16px;">Click any car to view features or compare two cars</p>
+  </header>
+
+  <div class="scroll-container">
+    <section class="car-list">
+      <div class="car" onclick="showDetails(0)">
+        <img src="assets/featured2.png" alt="Porsche 718 Cayman">
+        <h2>Porsche 718 Cayman</h2>
+        <div class="price">$63,400</div>
+      </div>
+      <div class="car" onclick="showDetails(1)">
+        <img src="assets/featured3.png" alt="Porsche 718 Boxster">
+        <h2>Porsche 718 Boxster</h2>
+        <div class="price">$65,500</div>
+      </div>
+      <div class="car" onclick="showDetails(2)">
+        <img src="assets/featured4.png" alt="Porsche Taycan">
+        <h2>Porsche Taycan</h2>
+        <div class="price">$90,900</div>
+      </div>
+      <div class="car" onclick="showDetails(3)">
+        <img src="assets/featured5.png" alt="Tesla Model S">
+        <h2>Tesla Model S</h2>
+        <div class="price">$74,990</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal -->
+  <div id="carModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2 id="carTitle"></h2>
+      <img id="carImage" style="max-width:300px; margin:10px auto;">
+      <div id="carPrice" class="price"></div>
+      <div class="features" id="carFeatures"></div>
+      <button class="compare-btn" onclick="addToCompare()">Add to Compare</button>
+    </div>
+  </div>
+
+  <!-- Comparison Section -->
+  <div class="comparison" id="comparison">
+    <h2 style="text-align:center;">Car Comparison</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th id="car1Name"></th>
+          <th id="car2Name"></th>
+        </tr>
+      </thead>
+      <tbody id="compareTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const cars = [
+      {
+        name: "Porsche 718 Cayman",
+        price: "$63,400",
+        img: "assets/featured2.png",
+        features: ["300-hp turbocharged engine", "0-60 mph in 4.9s", "Top speed 170 mph"]
+      },
+      {
+        name: "Porsche 718 Boxster",
+        price: "$65,500",
+        img: "assets/featured3.png",
+        features: ["Turbocharged flat-four", "Convertible roof", "Precise handling"]
+      },
+      {
+        name: "Porsche Taycan",
+        price: "$90,900",
+        img: "assets/featured4.png",
+        features: ["Fully electric", "Over 200 miles range", "0-60 mph in 3.8s"]
+      },
+      {
+        name: "Tesla Model S",
+        price: "$74,990",
+        img: "assets/featured5.png",
+        features: ["Electric dual motor", "396 miles range", "Autopilot feature"]
+      }
+    ];
+
+    let selectedCars = [];
+
+    function showDetails(index) {
+      const car = cars[index];
+      document.getElementById("carTitle").textContent = car.name;
+      document.getElementById("carPrice").textContent = car.price;
+      document.getElementById("carImage").src = car.img;
+      document.getElementById("carFeatures").innerHTML = "<ul>" + car.features.map(f => `<li>${f}</li>`).join("") + "</ul>";
+      document.getElementById("carModal").style.display = "flex";
+      document.getElementById("carModal").dataset.index = index;
+    }
+
+    function closeModal() {
+      document.getElementById("carModal").style.display = "none";
+    }
+
+    function addToCompare() {
+      const index = document.getElementById("carModal").dataset.index;
+      if (!selectedCars.includes(index)) {
+        selectedCars.push(index);
+      }
+      closeModal();
+      if (selectedCars.length === 2) {
+        showComparison();
+      }
+    }
+
+    function showComparison() {
+      const car1 = cars[selectedCars[0]];
+      const car2 = cars[selectedCars[1]];
+
+      document.getElementById("car1Name").textContent = car1.name;
+      document.getElementById("car2Name").textContent = car2.name;
+
+      let rows = "";
+      const maxFeatures = Math.max(car1.features.length, car2.features.length);
+      for (let i = 0; i < maxFeatures; i++) {
+        rows += `<tr>
+          <td>Feature ${i+1}</td>
+          <td>${car1.features[i] || "-"}</td>
+          <td>${car2.features[i] || "-"}</td>
+        </tr>`;
+      }
+
+      rows += `<tr><td>Price</td><td>${car1.price}</td><td>${car2.price}</td></tr>`;
+
+      document.getElementById("compareTable").innerHTML = rows;
+      document.getElementById("comparison").style.display = "block";
+      selectedCars = []; // reset
+    }
+  </script>
+</body>
+</html>
